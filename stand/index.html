@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Регистрация — КиноПодбор</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 40px auto; }
+    label { display: block; margin-top: 12px; }
+    input[type="email"], input[type="password"] { width: 100%; padding: 8px; box-sizing: border-box; }
+    .error { color: red; font-size: 12px; min-height: 16px; }
+    .success { color: green; font-weight: bold; margin-top: 16px; }
+    button { margin-top: 16px; padding: 10px 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Регистрация в КиноПодбор</h1>
+  <form id="registrationForm" novalidate>
+    <label for="email">Email</label>
+    <input type="email" id="email" data-testid="email" />
+    <div class="error" data-testid="email-error"></div>
+
+    <label for="password">Пароль</label>
+    <input type="password" id="password" data-testid="password" />
+    <div class="error" data-testid="password-error"></div>
+
+    <label for="confirm">Подтверждение пароля</label>
+    <input type="password" id="confirm" data-testid="confirm" />
+    <div class="error" data-testid="confirm-error"></div>
+
+    <label>
+      <input type="checkbox" id="agree" data-testid="agree" />
+      Согласен с правилами
+    </label>
+    <div class="error" data-testid="agree-error"></div>
+
+    <button type="submit" data-testid="submit">Зарегистрироваться</button>
+  </form>
+
+  <div class="success" data-testid="success" style="display:none;">
+    Регистрация успешна! Проверьте почту.
+  </div>
+
+  <script>
+    const EXISTING_EMAILS = ['existing@test.ru'];
+    const form = document.getElementById('registrationForm');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      clearErrors();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+      const agree = document.getElementById('agree').checked;
+      let valid = true;
+
+      if (!email) {
+        setError('email', 'Email обязателен'); valid = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.includes('<') || email.includes('>')) {
+        setError('email', 'Неверный формат email'); valid = false;
+      } else if (EXISTING_EMAILS.includes(email.toLowerCase())) {
+        setError('email', 'Пользователь с таким email уже существует'); valid = false;
+      }
+
+      if (!password) {
+        setError('password', 'Пароль обязателен'); valid = false;
+      } else if (password.length < 8) {
+        setError('password', 'Минимум 8 символов'); valid = false;
+      } else if (password.length > 64) {
+        setError('password', 'Максимум 64 символа'); valid = false;
+      } else if (!/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+        setError('password', 'Пароль должен содержать букву и цифру'); valid = false;
+      }
+
+      if (password !== confirm) {
+        setError('confirm', 'Пароли не совпадают'); valid = false;
+      }
+
+      if (!agree) {
+        setError('agree', 'Необходимо согласие с правилами'); valid = false;
+      }
+
+      if (valid) {
+        document.querySelector('[data-testid="success"]').style.display = 'block';
+        form.reset();
+      }
+    });
+
+    function setError(field, message) {
+      document.querySelector(`[data-testid="${field}-error"]`).textContent = message;
+    }
+    function clearErrors() {
+      document.querySelectorAll('.error').forEach(el => el.textContent = '');
+      document.querySelector('[data-testid="success"]').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
